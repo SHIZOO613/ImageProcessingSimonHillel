@@ -1,0 +1,5 @@
+# ninja log v6
+3	77	7674003260720605	CMakeFiles/image_processing.dir/main.c.obj	a33d69974822d17
+10	124	7674002032365485	CMakeFiles/image_processing.dir/bmp8.c.obj	35b76d94f07aeaee
+104	173	7674003261724538	image_processing.exe	2672088bc2bcdf36
+6	104	7674003260753535	CMakeFiles/image_processing.dir/bmp24.c.obj	9bf658a21f59799a
