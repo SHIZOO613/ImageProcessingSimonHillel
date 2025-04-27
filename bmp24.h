@@ -102,9 +102,6 @@ void file_rawWrite(uint32_t position, void * buffer, uint32_t size, size_t n, FI
 // Part 2: Pixel Data Read/Write (To be implemented)
 void bmp24_readPixelData(t_bmp24 * image, FILE * file);
 void bmp24_writePixelData(t_bmp24 * image, FILE * file);
-// Helper for single pixel read/write (Optional, can be inline in Data functions)
-// void bmp24_readPixelValue(t_bmp24 * image, int x, int y, FILE * file);
-// void bmp24_writePixelValue(t_bmp24 * image, int x, int y, FILE * file);
 
 // Part 2: Loading and Saving
 t_bmp24 * bmp24_loadImage(const char * filename);

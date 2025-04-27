@@ -465,8 +465,17 @@ void bmp24_applyFilter(t_bmp24 * img, float ** kernel, int kernelSize) {
 
 float ** createBoxBlurKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
+    if (!kernel) {
+        printf("Error: Kernel allocation failed (rows)\n");
+        return NULL;
+    }
     for (int i = 0; i < 3; i++) {
         kernel[i] = (float *)malloc(3 * sizeof(float));
+        if (!kernel[i]) {
+            printf("Error: Kernel allocation failed (row %d)\n", i);
+            freeKernel(kernel, i); // Free previously allocated rows
+            return NULL;
+        }
         for (int j = 0; j < 3; j++) {
             kernel[i][j] = 1.0f / 9.0f;
         }
@@ -476,6 +485,10 @@ float ** createBoxBlurKernel() {
 
 float ** createGaussianBlurKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
+    if (!kernel) {
+        printf("Error: Kernel allocation failed (rows)\n");
+        return NULL;
+    }
     float values[3][3] = {
         {1.0f/16.0f, 2.0f/16.0f, 1.0f/16.0f},
         {2.0f/16.0f, 4.0f/16.0f, 2.0f/16.0f},
@@ -483,6 +496,11 @@ float ** createGaussianBlurKernel() {
     };
     for (int i = 0; i < 3; i++) {
         kernel[i] = (float *)malloc(3 * sizeof(float));
+        if (!kernel[i]) {
+            printf("Error: Kernel allocation failed (row %d)\n", i);
+            freeKernel(kernel, i);
+            return NULL;
+        }
         memcpy(kernel[i], values[i], 3 * sizeof(float));
     }
     return kernel;
@@ -490,6 +508,10 @@ float ** createGaussianBlurKernel() {
 
 float ** createOutlineKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
+    if (!kernel) {
+        printf("Error: Kernel allocation failed (rows)\n");
+        return NULL;
+    }
      float values[3][3] = {
         {-1.0f, -1.0f, -1.0f},
         {-1.0f,  8.0f, -1.0f},
@@ -497,6 +519,11 @@ float ** createOutlineKernel() {
     };
     for (int i = 0; i < 3; i++) {
         kernel[i] = (float *)malloc(3 * sizeof(float));
+         if (!kernel[i]) {
+            printf("Error: Kernel allocation failed (row %d)\n", i);
+            freeKernel(kernel, i);
+            return NULL;
+        }
          memcpy(kernel[i], values[i], 3 * sizeof(float));
     }
     return kernel;
@@ -504,6 +531,10 @@ float ** createOutlineKernel() {
 
 float ** createEmbossKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
+    if (!kernel) {
+        printf("Error: Kernel allocation failed (rows)\n");
+        return NULL;
+    }
     float values[3][3] = {
         {-2.0f, -1.0f,  0.0f},
         {-1.0f,  1.0f,  1.0f},
@@ -511,6 +542,11 @@ float ** createEmbossKernel() {
     };
      for (int i = 0; i < 3; i++) {
         kernel[i] = (float *)malloc(3 * sizeof(float));
+        if (!kernel[i]) {
+            printf("Error: Kernel allocation failed (row %d)\n", i);
+            freeKernel(kernel, i);
+            return NULL;
+        }
          memcpy(kernel[i], values[i], 3 * sizeof(float));
     }
     return kernel;
@@ -518,6 +554,10 @@ float ** createEmbossKernel() {
 
 float ** createSharpenKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
+    if (!kernel) {
+        printf("Error: Kernel allocation failed (rows)\n");
+        return NULL;
+    }
     float values[3][3] = {
         { 0.0f, -1.0f,  0.0f},
         {-1.0f,  5.0f, -1.0f},
@@ -525,6 +565,11 @@ float ** createSharpenKernel() {
     };
      for (int i = 0; i < 3; i++) {
         kernel[i] = (float *)malloc(3 * sizeof(float));
+        if (!kernel[i]) {
+            printf("Error: Kernel allocation failed (row %d)\n", i);
+            freeKernel(kernel, i);
+            return NULL;
+        }
          memcpy(kernel[i], values[i], 3 * sizeof(float));
     }
     return kernel;
