@@ -44,7 +44,7 @@ void bmp24_freeDataPixels(t_pixel ** pixels, int height) {
     free(pixels);
 }
 
-t_bmp24 * bmp24_allocate(int width, int height) {
+t_bmp24 * bmp24_allocate(int width, int height, int colorDepth) {
     if (width <= 0 || height <= 0) return NULL;
 
     t_bmp24 * img = (t_bmp24 *)malloc(sizeof(t_bmp24));
@@ -61,7 +61,7 @@ t_bmp24 * bmp24_allocate(int width, int height) {
 
     img->width = width;
     img->height = height;
-    img->colorDepth = DEFAULT_COLOR_DEPTH; // Default to 24
+    img->colorDepth = colorDepth;
 
     // Initialize headers (can be filled properly during load/save)
     memset(&img->header, 0, sizeof(t_bmp_header));
@@ -234,7 +234,7 @@ t_bmp24 * bmp24_loadImage(const char * filename) {
     }
 
     // Allocate memory for the image structure
-    t_bmp24 * img = bmp24_allocate(header_info.width, header_info.height);
+    t_bmp24 * img = bmp24_allocate(header_info.width, header_info.height, header_info.bits);
     if (!img) {
         fclose(file);
         return NULL;

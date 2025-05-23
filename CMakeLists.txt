@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
-project(ImageProcessing C)
+project(ImageProcessing)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_executable(image_processing main.c bmp8.c bmp24.c)
+add_executable(image_processing
+    main.c
+    bmp8.c
+    bmp24.c
+)
+
+target_include_directories(image_processing PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Link against the math library for functions like round()
 target_link_libraries(image_processing PRIVATE m)
