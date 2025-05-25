@@ -1,3 +1,10 @@
+/*
+ * bmp24.h
+ * Author: Simon Hillel
+ * Description: Header for 24-bit BMP image handling and processing functions.
+ * Declares structures and functions for loading, saving, manipulating, and filtering 24-bit BMP images.
+ * This file is a core part of the image processing project, supporting color image operations.
+ */
 #ifndef BMP24_H
 #define BMP24_H
 
@@ -89,49 +96,132 @@ typedef struct {
 
 // --- Function Prototypes --- //
 
-// Part 2: Allocation and Deallocation
+// Allocation and Deallocation
+/**
+ * Allocates a 2D array of t_pixel pointers for image pixel data.
+ */
 t_pixel ** bmp24_allocateDataPixels(int width, int height);
+/**
+ * Frees a 2D array of t_pixel pointers allocated for image pixel data.
+ */
 void bmp24_freeDataPixels(t_pixel ** pixels, int height);
+/**
+ * Allocates a t_bmp24 structure and its pixel data for a 24-bit BMP image.
+ */
 t_bmp24 * bmp24_allocate(int width, int height, int colorDepth);
+/**
+ * Frees a t_bmp24 structure and its associated pixel data.
+ */
 void bmp24_free(t_bmp24 * img);
 
-// Part 2: File I/O Helpers (Provided in description)
+// File I/O Helpers
+/**
+ * Reads raw data from a file at a specified position.
+ */
 void file_rawRead(uint32_t position, void * buffer, uint32_t size, size_t n, FILE * file);
+/**
+ * Writes raw data to a file at a specified position.
+ */
 void file_rawWrite(uint32_t position, void * buffer, uint32_t size, size_t n, FILE * file);
 
-// Part 2: Pixel Data Read/Write (To be implemented)
+// Pixel Data Read/Write
+/**
+ * Reads pixel data from a BMP file into a t_bmp24 structure.
+ */
 void bmp24_readPixelData(t_bmp24 * image, FILE * file);
+/**
+ * Writes pixel data from a t_bmp24 structure to a BMP file.
+ */
 void bmp24_writePixelData(t_bmp24 * image, FILE * file);
 
-// Part 2: Loading and Saving
+// Loading and Saving
+/**
+ * Loads a 24-bit BMP image from a file.
+ */
 t_bmp24 * bmp24_loadImage(const char * filename);
+/**
+ * Saves a 24-bit BMP image to a file.
+ */
 void bmp24_saveImage(t_bmp24 * img, const char * filename);
-void bmp24_printInfo(t_bmp24 * img); // Added for consistency
+/**
+ * Prints information about a 24-bit BMP image.
+ */
+void bmp24_printInfo(t_bmp24 * img);
 
-// Part 2: Image Processing
+// Image Processing
+/**
+ * Applies a negative filter to a 24-bit BMP image.
+ */
 void bmp24_negative(t_bmp24 * img);
+/**
+ * Converts a 24-bit BMP image to grayscale in-place.
+ */
 void bmp24_grayscale(t_bmp24 * img);
+/**
+ * Adjusts the brightness of a 24-bit BMP image.
+ */
 void bmp24_brightness(t_bmp24 * img, int value);
 
-// Part 2: Convolution Filters
+// Convolution Filters
+/**
+ * Applies a convolution kernel to a pixel in a 24-bit BMP image.
+ */
 t_pixel bmp24_convolution(t_bmp24 * img, t_pixel ** tempData, int x, int y, float ** kernel, int kernelSize);
-void bmp24_applyFilter(t_bmp24 * img, float ** kernel, int kernelSize); // General filter application
-// Specific filter functions (can call bmp24_applyFilter with predefined kernels)
+/**
+ * Applies a convolution filter to a 24-bit BMP image using a given kernel.
+ */
+void bmp24_applyFilter(t_bmp24 * img, float ** kernel, int kernelSize);
+/**
+ * Applies a box blur filter to a 24-bit BMP image.
+ */
 void bmp24_boxBlur(t_bmp24 * img);
+/**
+ * Applies a Gaussian blur filter to a 24-bit BMP image.
+ */
 void bmp24_gaussianBlur(t_bmp24 * img);
+/**
+ * Applies an outline filter to a 24-bit BMP image.
+ */
 void bmp24_outline(t_bmp24 * img);
+/**
+ * Applies an emboss filter to a 24-bit BMP image.
+ */
 void bmp24_emboss(t_bmp24 * img);
+/**
+ * Applies a sharpen filter to a 24-bit BMP image.
+ */
 void bmp24_sharpen(t_bmp24 * img);
 
-// Part 3: Histogram Equalization (Color)
+// Histogram Equalization (Color)
+/**
+ * Performs histogram equalization on a 24-bit BMP image (color version).
+ */
 void bmp24_equalize(t_bmp24 * img);
 
-// --- Kernel Creation/Freeing Functions (Defined in bmp24.c) --- //
+// Kernel Creation/Freeing Functions
+/**
+ * Creates a 3x3 box blur kernel for smoothing images.
+ */
 float ** createBoxBlurKernel();
+/**
+ * Creates a 3x3 Gaussian blur kernel for soft blurring.
+ */
 float ** createGaussianBlurKernel();
+/**
+ * Creates a 3x3 outline kernel for edge detection.
+ */
 float ** createOutlineKernel();
+/**
+ * Creates a 3x3 emboss kernel for embossing effect.
+ */
 float ** createEmbossKernel();
+/**
+ * Creates a 3x3 sharpen kernel for sharpening images.
+ */
 float ** createSharpenKernel();
+/**
+ * Frees a dynamically allocated convolution kernel.
+ */
 void freeKernel(float ** kernel, int size);
 
 #endif // BMP24_H 

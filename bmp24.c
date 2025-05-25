@@ -6,11 +6,25 @@
 #include "bmp24.h"
 #include "bmp8.h" // Need this for grayscale equalization functions
 
+/*
+ * bmp24.c
+ * Author: Simon Hillel
+ * Description: Implementation of 24-bit BMP image handling and processing functions.
+ * This file provides functions for loading, saving, manipulating, and filtering 24-bit BMP images.
+ * It is a core part of the image processing project, supporting color image operations.
+ */
+
 // Function declarations
 void freeKernel(float **kernel, int size);
 
 // --- Part 2: Allocation and Deallocation --- //
 
+/**
+ * Allocates a 2D array of t_pixel pointers for image pixel data.
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ * @return Pointer to the allocated 2D pixel array, or NULL on failure.
+ */
 t_pixel ** bmp24_allocateDataPixels(int width, int height) {
     if (width <= 0 || height <= 0) return NULL;
 
@@ -37,6 +51,11 @@ t_pixel ** bmp24_allocateDataPixels(int width, int height) {
     return pixels;
 }
 
+/**
+ * Frees a 2D array of t_pixel pointers allocated for image pixel data.
+ * @param pixels The 2D pixel array to free.
+ * @param height The height of the image (number of rows).
+ */
 void bmp24_freeDataPixels(t_pixel ** pixels, int height) {
     if (!pixels) return;
     for (int i = 0; i < height; i++) {
@@ -47,6 +66,13 @@ void bmp24_freeDataPixels(t_pixel ** pixels, int height) {
     free(pixels);
 }
 
+/**
+ * Allocates a t_bmp24 structure and its pixel data for a 24-bit BMP image.
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ * @param colorDepth The color depth (should be 24 for 24-bit images).
+ * @return Pointer to the allocated t_bmp24 structure, or NULL on failure.
+ */
 t_bmp24 * bmp24_allocate(int width, int height, int colorDepth) {
     if (width <= 0 || height <= 0) return NULL;
 
@@ -73,6 +99,10 @@ t_bmp24 * bmp24_allocate(int width, int height, int colorDepth) {
     return img;
 }
 
+/**
+ * Frees a t_bmp24 structure and its associated pixel data.
+ * @param img Pointer to the t_bmp24 structure to free.
+ */
 void bmp24_free(t_bmp24 * img) {
     if (img) {
         bmp24_freeDataPixels(img->data, img->height);
@@ -82,16 +112,14 @@ void bmp24_free(t_bmp24 * img) {
 
 // --- Part 2: File I/O Helpers (Provided in description) --- //
 
-/*
-* @brief Set the file cursor to the position position in the file file,
-* then read n elements of size size from the file into the buffer.
-* @param position The position from which to read in file.
-* @param buffer The buffer to read the elements into.
-* @param size The size of each element to read.
-* @param n The number of elements to read.
-* @param file The file descriptor to read from.
-* @return void
-*/
+/**
+ * Reads raw data from a file at a specified position.
+ * @param position The position in the file to start reading from.
+ * @param buffer The buffer to read data into.
+ * @param size The size of each element to read.
+ * @param n The number of elements to read.
+ * @param file The file pointer.
+ */
 void file_rawRead (uint32_t position, void * buffer, uint32_t size, size_t n, FILE * file) {
     if(fseek(file, position, SEEK_SET) != 0) {
         printf("Error: Failed to seek to position %u\n", position);
@@ -103,16 +131,14 @@ void file_rawRead (uint32_t position, void * buffer, uint32_t size, size_t n, FI
     }
 }
 
-/*
-* @brief Set the file cursor to the position position in the file file,
-* then write n elements of size size from the buffer into the file.
-* @param position The position from which to write in file.
-* @param buffer The buffer to write the elements from.
-* @param size The size of each element to write.
-* @param n The number of elements to write.
-* @param file The file descriptor to write to.
-* @return void
-*/
+/**
+ * Writes raw data to a file at a specified position.
+ * @param position The position in the file to start writing to.
+ * @param buffer The buffer to write data from.
+ * @param size The size of each element to write.
+ * @param n The number of elements to write.
+ * @param file The file pointer.
+ */
 void file_rawWrite (uint32_t position, void * buffer, uint32_t size, size_t n, FILE * file) {
     if(fseek(file, position, SEEK_SET) != 0) {
          printf("Error: Failed to seek to position %u\n", position);
@@ -126,6 +152,12 @@ void file_rawWrite (uint32_t position, void * buffer, uint32_t size, size_t n, F
 
 // --- Part 2: Pixel Data Read/Write --- //
 
+/**
+ * Reads pixel data from a BMP file into a t_bmp24 structure.
+ * Handles row padding and bottom-up storage.
+ * @param image Pointer to the t_bmp24 structure.
+ * @param file The file pointer.
+ */
 void bmp24_readPixelData(t_bmp24 * image, FILE * file) {
     if (!image || !image->data || !file) return;
 
@@ -156,6 +188,12 @@ void bmp24_readPixelData(t_bmp24 * image, FILE * file) {
     }
 }
 
+/**
+ * Writes pixel data from a t_bmp24 structure to a BMP file.
+ * Handles row padding and bottom-up storage.
+ * @param image Pointer to the t_bmp24 structure.
+ * @param file The file pointer.
+ */
 void bmp24_writePixelData(t_bmp24 * image, FILE * file) {
     if (!image || !image->data || !file) return;
 
@@ -188,6 +226,12 @@ void bmp24_writePixelData(t_bmp24 * image, FILE * file) {
 // --- Placeholders for remaining functions --- //
 // (Will be implemented in subsequent steps)
 
+/**
+ * Loads a 24-bit BMP image from a file.
+ * Supports classic and extended BMP headers (40, 108, 124 bytes).
+ * @param filename The path to the BMP file.
+ * @return Pointer to the loaded t_bmp24 structure, or NULL on failure.
+ */
 t_bmp24 * bmp24_loadImage(const char * filename) {
     FILE * file = fopen(filename, "rb");
     if (!file) {
@@ -260,6 +304,11 @@ t_bmp24 * bmp24_loadImage(const char * filename) {
     return img;
 }
 
+/**
+ * Saves a 24-bit BMP image to a file.
+ * @param img Pointer to the t_bmp24 structure to save.
+ * @param filename The path to the output BMP file.
+ */
 void bmp24_saveImage(t_bmp24 * img, const char * filename) {
     if (!img || !img->data) {
         printf("Error: Cannot save NULL image\n");
@@ -324,6 +373,10 @@ void bmp24_saveImage(t_bmp24 * img, const char * filename) {
     fclose(file);
 }
 
+/**
+ * Prints information about a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_printInfo(t_bmp24 * img) {
      if (!img) {
         printf("Error: Invalid image pointer\n");
@@ -342,6 +395,10 @@ void bmp24_printInfo(t_bmp24 * img) {
 
 // --- Part 2: Image Processing --- //
 
+/**
+ * Applies a negative filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_negative(t_bmp24 * img) {
     if (!img || !img->data) return;
 
@@ -355,6 +412,10 @@ void bmp24_negative(t_bmp24 * img) {
     }
 }
 
+/**
+ * Converts a 24-bit BMP image to grayscale in-place.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_grayscale(t_bmp24 * img) {
     if (!img || !img->data) return;
 
@@ -371,6 +432,11 @@ void bmp24_grayscale(t_bmp24 * img) {
     }
 }
 
+/**
+ * Adjusts the brightness of a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ * @param value The brightness adjustment value (-255 to 255).
+ */
 void bmp24_brightness(t_bmp24 * img, int value) {
      if (!img || !img->data) return;
 
@@ -391,13 +457,27 @@ void bmp24_brightness(t_bmp24 * img, int value) {
 
 // --- Part 2: Convolution Filters --- //
 
-// Helper function to clamp values
+/**
+ * Clamps a float value to the range [0, 255] and returns as uint8_t.
+ * @param value The value to clamp.
+ * @return The clamped value as uint8_t.
+ */
 uint8_t clamp_uint8(float value) {
     if (value > 255.0f) return 255;
     if (value < 0.0f) return 0;
     return (uint8_t)round(value);
 }
 
+/**
+ * Applies a convolution kernel to a pixel in a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ * @param tempData Temporary copy of the image data.
+ * @param x The x-coordinate of the pixel.
+ * @param y The y-coordinate of the pixel.
+ * @param kernel The convolution kernel.
+ * @param kernelSize The size of the kernel (must be odd).
+ * @return The resulting t_pixel after convolution.
+ */
 t_pixel bmp24_convolution(t_bmp24 * img, t_pixel ** tempData, int x, int y, float ** kernel, int kernelSize) {
     t_pixel result = {0, 0, 0};
     if (!img || !tempData || !kernel || kernelSize % 2 == 0) return result;
@@ -432,6 +512,12 @@ t_pixel bmp24_convolution(t_bmp24 * img, t_pixel ** tempData, int x, int y, floa
     return result;
 }
 
+/**
+ * Applies a convolution filter to a 24-bit BMP image using a given kernel.
+ * @param img Pointer to the t_bmp24 structure.
+ * @param kernel The convolution kernel.
+ * @param kernelSize The size of the kernel (must be odd).
+ */
 void bmp24_applyFilter(t_bmp24 *img, float **kernel, int kernelSize) {
     if (!img || !img->data || !kernel || kernelSize % 2 == 0) {
         printf("Error: Invalid parameters for filter application\n");
@@ -482,12 +568,13 @@ void bmp24_applyFilter(t_bmp24 *img, float **kernel, int kernelSize) {
     bmp24_freeDataPixels(tempData, height);
 }
 
-// --- Specific Filter Implementations --- //
-// Note: Kernels are created and freed within each function.
-// This is slightly inefficient if applying multiple filters,
-// but simple for this structure.
-// Kernels definitions are moved from main.c to here.
+// --- Kernel Creation/Freeing Functions --- //
+// (Add comments for each kernel function and freeKernel)
 
+/**
+ * Creates a 3x3 box blur kernel for smoothing images.
+ * @return Pointer to the allocated kernel, or NULL on failure.
+ */
 float ** createBoxBlurKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
     if (!kernel) {
@@ -508,6 +595,10 @@ float ** createBoxBlurKernel() {
     return kernel;
 }
 
+/**
+ * Creates a 3x3 Gaussian blur kernel for soft blurring.
+ * @return Pointer to the allocated kernel, or NULL on failure.
+ */
 float ** createGaussianBlurKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
     if (!kernel) {
@@ -531,6 +622,10 @@ float ** createGaussianBlurKernel() {
     return kernel;
 }
 
+/**
+ * Creates a 3x3 outline kernel for edge detection.
+ * @return Pointer to the allocated kernel, or NULL on failure.
+ */
 float ** createOutlineKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
     if (!kernel) {
@@ -554,6 +649,10 @@ float ** createOutlineKernel() {
     return kernel;
 }
 
+/**
+ * Creates a 3x3 emboss kernel for embossing effect.
+ * @return Pointer to the allocated kernel, or NULL on failure.
+ */
 float ** createEmbossKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
     if (!kernel) {
@@ -577,6 +676,10 @@ float ** createEmbossKernel() {
     return kernel;
 }
 
+/**
+ * Creates a 3x3 sharpen kernel for sharpening images.
+ * @return Pointer to the allocated kernel, or NULL on failure.
+ */
 float ** createSharpenKernel() {
     float ** kernel = (float **)malloc(3 * sizeof(float *));
     if (!kernel) {
@@ -600,6 +703,11 @@ float ** createSharpenKernel() {
     return kernel;
 }
 
+/**
+ * Frees a dynamically allocated convolution kernel.
+ * @param kernel The kernel to free.
+ * @param size The size of the kernel (number of rows).
+ */
 void freeKernel(float ** kernel, int size) {
     if (!kernel) return;
     for (int i = 0; i < size; i++) {
@@ -610,6 +718,10 @@ void freeKernel(float ** kernel, int size) {
 
 // Apply specific filters by creating the kernel and calling bmp24_applyFilter
 
+/**
+ * Applies a box blur filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_boxBlur(t_bmp24 * img) {
     float ** kernel = createBoxBlurKernel();
     if (kernel) {
@@ -618,6 +730,10 @@ void bmp24_boxBlur(t_bmp24 * img) {
     }
 }
 
+/**
+ * Applies a Gaussian blur filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_gaussianBlur(t_bmp24 * img) {
      float ** kernel = createGaussianBlurKernel();
     if (kernel) {
@@ -626,6 +742,10 @@ void bmp24_gaussianBlur(t_bmp24 * img) {
     }
 }
 
+/**
+ * Applies an outline filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_outline(t_bmp24 * img) {
      float ** kernel = createOutlineKernel();
     if (kernel) {
@@ -634,6 +754,10 @@ void bmp24_outline(t_bmp24 * img) {
     }
 }
 
+/**
+ * Applies an emboss filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_emboss(t_bmp24 * img) {
      float ** kernel = createEmbossKernel();
     if (kernel) {
@@ -642,6 +766,10 @@ void bmp24_emboss(t_bmp24 * img) {
     }
 }
 
+/**
+ * Applies a sharpen filter to a 24-bit BMP image.
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_sharpen(t_bmp24 * img) {
      float ** kernel = createSharpenKernel();
     if (kernel) {
@@ -652,7 +780,11 @@ void bmp24_sharpen(t_bmp24 * img) {
 
 // --- Part 3: Histogram Equalization (Color) --- //
 
-// Helper function to convert RGB to YUV
+/**
+ * Converts an RGB pixel to YUV color space.
+ * @param p The RGB pixel.
+ * @return The corresponding YUV pixel.
+ */
 t_yuv rgb_to_yuv(t_pixel p) {
     t_yuv yuv;
     double r = p.red;
@@ -666,7 +798,11 @@ t_yuv rgb_to_yuv(t_pixel p) {
     return yuv;
 }
 
-// Helper function to convert YUV to RGB
+/**
+ * Converts a YUV pixel to RGB color space.
+ * @param yuv The YUV pixel.
+ * @return The corresponding RGB pixel.
+ */
 t_pixel yuv_to_rgb(t_yuv yuv) {
     t_pixel p;
     double y = yuv.y;
@@ -685,6 +821,10 @@ t_pixel yuv_to_rgb(t_yuv yuv) {
     return p;
 }
 
+/**
+ * Performs histogram equalization on a 24-bit BMP image (color version).
+ * @param img Pointer to the t_bmp24 structure.
+ */
 void bmp24_equalize(t_bmp24 * img) {
     if (!img || !img->data) return;
 

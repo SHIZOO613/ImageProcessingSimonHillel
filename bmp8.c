@@ -3,6 +3,19 @@
 #include <string.h>
 #include "bmp8.h"
 
+/*
+ * bmp8.c
+ * Author: Simon Hillel
+ * Description: Implementation of 8-bit grayscale BMP image handling and processing functions.
+ * This file provides functions for loading, saving, manipulating, and filtering 8-bit BMP images.
+ * It is a core part of the image processing project, supporting grayscale image operations.
+ */
+
+/**
+ * Loads an 8-bit grayscale BMP image from a file.
+ * @param filename The path to the BMP file.
+ * @return Pointer to the loaded t_bmp8 structure, or NULL on failure.
+ */
 t_bmp8 *bmp8_loadImage(const char *filename) {
     FILE *file = fopen(filename, "rb");
     if (!file) {
@@ -74,6 +87,11 @@ t_bmp8 *bmp8_loadImage(const char *filename) {
     return img;
 }
 
+/**
+ * Saves an 8-bit grayscale BMP image to a file.
+ * @param filename The path to the output BMP file.
+ * @param img Pointer to the t_bmp8 structure to save.
+ */
 void bmp8_saveImage(const char *filename, t_bmp8 *img) {
     FILE *file = fopen(filename, "wb");
     if (!file) {
@@ -100,6 +118,10 @@ void bmp8_saveImage(const char *filename, t_bmp8 *img) {
     fclose(file);
 }
 
+/**
+ * Frees a t_bmp8 structure and its associated pixel data.
+ * @param img Pointer to the t_bmp8 structure to free.
+ */
 void bmp8_free(t_bmp8 *img) {
     if (img) {
         if (img->data) {
@@ -109,6 +131,10 @@ void bmp8_free(t_bmp8 *img) {
     }
 }
 
+/**
+ * Prints information about an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ */
 void bmp8_printInfo(t_bmp8 *img) {
     printf("Image Info:\n");
     printf("Width: %u\n", img->width);
@@ -117,12 +143,21 @@ void bmp8_printInfo(t_bmp8 *img) {
     printf("Data Size: %u\n", img->dataSize);
 }
 
+/**
+ * Applies a negative filter to an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ */
 void bmp8_negative(t_bmp8 *img) {
     for (unsigned int i = 0; i < img->dataSize; i++) {
         img->data[i] = 255 - img->data[i];
     }
 }
 
+/**
+ * Adjusts the brightness of an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ * @param value The brightness adjustment value (-255 to 255).
+ */
 void bmp8_brightness(t_bmp8 *img, int value) {
     for (unsigned int i = 0; i < img->dataSize; i++) {
         int newValue = img->data[i] + value;
@@ -132,12 +167,23 @@ void bmp8_brightness(t_bmp8 *img, int value) {
     }
 }
 
+/**
+ * Applies a threshold filter to an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ * @param threshold The threshold value (0-255).
+ */
 void bmp8_threshold(t_bmp8 *img, int threshold) {
     for (unsigned int i = 0; i < img->dataSize; i++) {
         img->data[i] = (img->data[i] >= threshold) ? 255 : 0;
     }
 }
 
+/**
+ * Applies a convolution filter to an 8-bit grayscale BMP image using a given kernel.
+ * @param img Pointer to the t_bmp8 structure.
+ * @param kernel The convolution kernel.
+ * @param kernelSize The size of the kernel (must be odd).
+ */
 void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     if (!img || !img->data || !kernel || kernelSize % 2 == 0) return;
 
@@ -180,6 +226,11 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     free(newData);
 }
 
+/**
+ * Computes the histogram of an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ * @return Pointer to the histogram array (256 elements), or NULL on failure.
+ */
 unsigned int *bmp8_computeHistogram(t_bmp8 *img) {
     unsigned int *hist = (unsigned int *)calloc(256, sizeof(unsigned int));
     if (!hist) return NULL;
@@ -191,6 +242,11 @@ unsigned int *bmp8_computeHistogram(t_bmp8 *img) {
     return hist;
 }
 
+/**
+ * Computes the cumulative distribution function (CDF) from a histogram.
+ * @param hist Pointer to the histogram array (256 elements).
+ * @return Pointer to the CDF array (256 elements), or NULL on failure.
+ */
 unsigned int *bmp8_computeCDF(unsigned int *hist) {
     unsigned int *cdf = (unsigned int *)malloc(256 * sizeof(unsigned int));
     if (!cdf) return NULL;
@@ -203,6 +259,11 @@ unsigned int *bmp8_computeCDF(unsigned int *hist) {
     return cdf;
 }
 
+/**
+ * Applies histogram equalization to an 8-bit grayscale BMP image.
+ * @param img Pointer to the t_bmp8 structure.
+ * @param hist_eq Pointer to the equalized histogram array (256 elements).
+ */
 void bmp8_equalize(t_bmp8 *img, unsigned int *hist_eq) {
     for (unsigned int i = 0; i < img->dataSize; i++) {
         img->data[i] = hist_eq[img->data[i]];
