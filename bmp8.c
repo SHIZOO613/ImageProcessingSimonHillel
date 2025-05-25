@@ -36,7 +36,9 @@ t_bmp8 *bmp8_loadImage(const char *filename) {
     img->width = *(unsigned int *)&img->header[18];
     img->height = *(unsigned int *)&img->header[22];
     img->colorDepth = *(unsigned int *)&img->header[28];
-    img->dataSize = *(unsigned int *)&img->header[34];
+    // Calculate row size with padding
+    int row_padded = (img->width + 3) & (~3);
+    img->dataSize = row_padded * img->height;
 
     // Verify color depth
     if (img->colorDepth != 8) {
@@ -46,8 +48,8 @@ t_bmp8 *bmp8_loadImage(const char *filename) {
         return NULL;
     }
 
-    // Allocate memory for image data
-    img->data = (unsigned char *)malloc(img->dataSize);
+    // Allocate memory for image data (only pixel data, not padding)
+    img->data = (unsigned char *)malloc(img->width * img->height);
     if (!img->data) {
         printf("Error: Could not allocate memory for image data\n");
         free(img);
@@ -55,13 +57,17 @@ t_bmp8 *bmp8_loadImage(const char *filename) {
         return NULL;
     }
 
-    // Read image data
-    if (fread(img->data, 1, img->dataSize, file) != img->dataSize) {
-        printf("Error: Could not read image data\n");
-        free(img->data);
-        free(img);
-        fclose(file);
-        return NULL;
+    // Read image data row by row, skipping padding
+    for (unsigned int y = 0; y < img->height; y++) {
+        unsigned char row_buf[row_padded];
+        if (fread(row_buf, 1, row_padded, file) != row_padded) {
+            printf("Error: Could not read image data row\n");
+            free(img->data);
+            free(img);
+            fclose(file);
+            return NULL;
+        }
+        memcpy(&img->data[y * img->width], row_buf, img->width);
     }
 
     fclose(file);
@@ -81,8 +87,15 @@ void bmp8_saveImage(const char *filename, t_bmp8 *img) {
     // Write color table
     fwrite(img->colorTable, 1, 1024, file);
 
-    // Write image data
-    fwrite(img->data, 1, img->dataSize, file);
+    // Calculate row size with padding
+    int row_padded = (img->width + 3) & (~3);
+    unsigned char pad[4] = {0, 0, 0, 0};
+
+    // Write image data row by row, adding padding
+    for (unsigned int y = 0; y < img->height; y++) {
+        fwrite(&img->data[y * img->width], 1, img->width, file);
+        fwrite(pad, 1, row_padded - img->width, file);
+    }
 
     fclose(file);
 }
@@ -129,16 +142,16 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     if (!img || !img->data || !kernel || kernelSize % 2 == 0) return;
 
     int offset = kernelSize / 2;
-    unsigned char *newData = (unsigned char *)malloc(img->dataSize);
+    unsigned char *newData = (unsigned char *)malloc(img->width * img->height);
     if (!newData) {
         printf("Error: Could not allocate memory for filtered data\n");
         return;
     }
 
     // Copy original data to new buffer
-    memcpy(newData, img->data, img->dataSize);
+    memcpy(newData, img->data, img->width * img->height);
 
-    // Apply filter to each pixel
+    // Apply filter to each pixel (ignore padding, only process pixel data)
     for (unsigned int y = 0; y < img->height; y++) {
         for (unsigned int x = 0; x < img->width; x++) {
             float sum = 0.0f;
@@ -146,17 +159,14 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
                 for (int kx = 0; kx < kernelSize; kx++) {
                     int pixelX = x + kx - kernelSize/2;
                     int pixelY = y + ky - kernelSize/2;
-                    
                     // Handle edge cases
                     if (pixelX < 0) pixelX = 0;
                     if (pixelY < 0) pixelY = 0;
-                    if (pixelX >= img->width) pixelX = img->width - 1;
-                    if (pixelY >= img->height) pixelY = img->height - 1;
-                    
-                    sum += newData[pixelY * img->width + pixelX] * kernel[ky][kx];
+                    if (pixelX >= (int)img->width) pixelX = img->width - 1;
+                    if (pixelY >= (int)img->height) pixelY = img->height - 1;
+                    sum += img->data[pixelY * img->width + pixelX] * kernel[ky][kx];
                 }
             }
-            
             // Clamp and store result
             int result = (int)(sum + 0.5f);
             if (result < 0) result = 0;
@@ -166,7 +176,7 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     }
 
     // Copy filtered data back to image
-    memcpy(img->data, newData, img->dataSize);
+    memcpy(img->data, newData, img->width * img->height);
     free(newData);
 }
 
