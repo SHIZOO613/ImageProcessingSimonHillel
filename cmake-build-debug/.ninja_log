@@ -17,3 +17,5 @@
 26	152	7698979105210651	CMakeFiles/image_processing.dir/main.c.obj	f9b48d6594dc4fd2
 3	102	7698979827026664	CMakeFiles/image_processing.dir/bmp24.c.obj	3b107622bc06d31f
 102	345	7698979828023872	image_processing.exe	2672088bc2bcdf36
+3	83	7699004948420222	CMakeFiles/image_processing.dir/bmp8.c.obj	abd05cfd25cfac32
+84	162	7699004949220797	image_processing.exe	2672088bc2bcdf36
