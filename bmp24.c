@@ -220,10 +220,13 @@ t_bmp24 * bmp24_loadImage(const char * filename) {
      // Note: Skipping resolution and color count fields for now
 
     // Basic validation
-    if (header_info.size != BMP_INFOHEADER_SIZE) {
+    if (header_info.size < BMP_INFOHEADER_SIZE) {
         printf("Error: Unsupported BMP info header size (%u)\n", header_info.size);
         fclose(file);
         return NULL;
+    } else if (header_info.size > BMP_INFOHEADER_SIZE) {
+        // Skip the extra header bytes
+        fseek(file, header_info.size - BMP_INFOHEADER_SIZE, SEEK_CUR);
     }
     if (header_info.bits != 24) {
         printf("Error: Not a 24-bit BMP image (color depth is %u)\n", header_info.bits);
