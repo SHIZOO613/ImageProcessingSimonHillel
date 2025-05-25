@@ -1,0 +1,17 @@
+# CLion/JetBrains
+.idea/
+
+# CMake build directories and files
+cmake-build-debug/
+CMakeFiles/
+CMakeCache.txt
+
+# Compiled object files and executables
+*.o
+*.obj
+*.exe
+*.out
+*.log
+
+# VSCode/other IDEs (optional)
+.vscode/ 
