@@ -6,6 +6,9 @@
 #include "bmp24.h"
 #include "bmp8.h" // Need this for grayscale equalization functions
 
+// Function declarations
+void freeKernel(float **kernel, int size);
+
 // --- Part 2: Allocation and Deallocation --- //
 
 t_pixel ** bmp24_allocateDataPixels(int width, int height) {
@@ -426,15 +429,18 @@ t_pixel bmp24_convolution(t_bmp24 * img, t_pixel ** tempData, int x, int y, floa
     return result;
 }
 
-void bmp24_applyFilter(t_bmp24 * img, float ** kernel, int kernelSize) {
-     if (!img || !img->data || !kernel || kernelSize % 2 == 0) return;
+void bmp24_applyFilter(t_bmp24 *img, float **kernel, int kernelSize) {
+    if (!img || !img->data || !kernel || kernelSize % 2 == 0) {
+        printf("Error: Invalid parameters for filter application\n");
+        return;
+    }
 
     int width = img->width;
     int height = img->height;
     int n = kernelSize / 2;
 
     // Allocate temporary data buffer to store original pixel values
-    t_pixel ** tempData = bmp24_allocateDataPixels(width, height);
+    t_pixel **tempData = bmp24_allocateDataPixels(width, height);
     if (!tempData) {
         printf("Error: Failed to allocate temporary buffer for filtering\n");
         return;
@@ -445,11 +451,27 @@ void bmp24_applyFilter(t_bmp24 * img, float ** kernel, int kernelSize) {
         memcpy(tempData[y], img->data[y], width * sizeof(t_pixel));
     }
 
-    // Apply convolution, skipping edges
-    // (Start from n, stop before width/height - n)
+    // Apply convolution to each pixel
     for (int y = n; y < height - n; y++) {
         for (int x = n; x < width - n; x++) {
-            img->data[y][x] = bmp24_convolution(img, tempData, x, y, kernel, kernelSize);
+            float sum_red = 0.0f, sum_green = 0.0f, sum_blue = 0.0f;
+
+            // Apply kernel
+            for (int ky = -n; ky <= n; ky++) {
+                for (int kx = -n; kx <= n; kx++) {
+                    t_pixel neighbor = tempData[y + ky][x + kx];
+                    float kernel_val = kernel[ky + n][kx + n];
+
+                    sum_red += neighbor.red * kernel_val;
+                    sum_green += neighbor.green * kernel_val;
+                    sum_blue += neighbor.blue * kernel_val;
+                }
+            }
+
+            // Clamp results
+            img->data[y][x].red = clamp_uint8(sum_red);
+            img->data[y][x].green = clamp_uint8(sum_green);
+            img->data[y][x].blue = clamp_uint8(sum_blue);
         }
     }
 
@@ -698,7 +720,7 @@ void bmp24_equalize(t_bmp24 * img) {
 
     // 2. Compute normalized cumulative histogram (CDF) for Y channel
     // We reuse the bmp8_computeCDF function here.
-    unsigned int * hist_eq = bmp8_computeCDF(y_hist, numPixels);
+    unsigned int * hist_eq = bmp8_computeCDF(y_hist);
     free(y_hist); // Free the raw Y histogram
     if (!hist_eq) {
         printf("Error: Failed to compute CDF for Y channel\n");

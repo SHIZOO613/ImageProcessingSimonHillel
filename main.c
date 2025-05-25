@@ -94,9 +94,12 @@ int main() {
 
         switch (choice) {
             case 1:  // Open image
+                // Free previously loaded images to prevent memory leaks
+                if (currentImage24) { bmp24_free(currentImage24); currentImage24 = NULL; }
+                if (currentImage8) { bmp8_free(currentImage8); currentImage8 = NULL; }
                 printf("File path: ");
-                scanf("%s", filename);
-                
+                scanf("%255s", filename);
+                clear_input_buffer();
                 // Try to load as color image first
                 currentImage24 = bmp24_loadImage(filename);
                 if (currentImage24) {
@@ -111,14 +114,15 @@ int main() {
                         currentImageType = IMAGE_TYPE_BMP8;
                         printf("Grayscale image loaded successfully!\n");
                     } else {
-                        printf("Error: Could not load image\n");
+                        printf("Error: Could not load image. Please check the file path and format.\n");
                     }
                 }
                 break;
 
             case 2:  // Save image
                 printf("File path: ");
-                scanf("%s", filename);
+                scanf("%255s", filename);
+                clear_input_buffer();
                 if (isColor && currentImage24) {
                     bmp24_saveImage(currentImage24, filename);
                     printf("Color image saved successfully!\n");
@@ -126,18 +130,23 @@ int main() {
                     bmp8_saveImage(filename, currentImage8);
                     printf("Grayscale image saved successfully!\n");
                 } else {
-                    printf("Error: No image loaded\n");
+                    printf("Error: No image loaded. Please open an image first.\n");
                 }
                 break;
 
             case 3:  // Apply filter
                 if ((!isColor && !currentImage8) || (isColor && !currentImage24)) {
-                    printf("Error: No image loaded\n");
+                    printf("Error: No image loaded. Please open an image first.\n");
                     break;
                 }
 
                 displayFilterMenu();
-                scanf("%d", &filterChoice);
+                if (scanf("%d", &filterChoice) != 1) {
+                    printf("Invalid input. Please enter a number.\n");
+                    clear_input_buffer();
+                    break;
+                }
+                clear_input_buffer();
 
                 if (isColor) {
                     switch (filterChoice) {
@@ -146,7 +155,12 @@ int main() {
                             break;
                         case 2:
                             printf("Enter brightness value (-255 to 255): ");
-                            scanf("%d", &brightness);
+                            if (scanf("%d", &brightness) != 1) {
+                                printf("Invalid input.\n");
+                                clear_input_buffer();
+                                break;
+                            }
+                            clear_input_buffer();
                             bmp24_brightness(currentImage24, brightness);
                             break;
                         case 3:
@@ -170,7 +184,7 @@ int main() {
                         case 9:
                             continue;
                         default:
-                            printf("Invalid choice\n");
+                            printf("Invalid filter choice.\n");
                             continue;
                     }
                 } else {
@@ -180,12 +194,22 @@ int main() {
                             break;
                         case 2:
                             printf("Enter brightness value (-255 to 255): ");
-                            scanf("%d", &brightness);
+                            if (scanf("%d", &brightness) != 1) {
+                                printf("Invalid input.\n");
+                                clear_input_buffer();
+                                break;
+                            }
+                            clear_input_buffer();
                             bmp8_brightness(currentImage8, brightness);
                             break;
                         case 3:
                             printf("Enter threshold value (0 to 255): ");
-                            scanf("%d", &brightness);
+                            if (scanf("%d", &brightness) != 1) {
+                                printf("Invalid input.\n");
+                                clear_input_buffer();
+                                break;
+                            }
+                            clear_input_buffer();
                             bmp8_threshold(currentImage8, brightness);
                             break;
                         case 4:
@@ -271,7 +295,7 @@ int main() {
                         case 9:
                             continue;
                         default:
-                            printf("Invalid choice\n");
+                            printf("Invalid filter choice.\n");
                             continue;
                     }
                 }

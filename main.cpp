@@ -110,7 +110,7 @@ int main() {
     int propos[CODE_SIZE];
     char result[CODE_SIZE];
     char *grid[MAX_ATTEMPTS];
-    int attempts = 0;
+    int attempts = 0;1
 
     random_comb(comb);
     init_grid(grid);

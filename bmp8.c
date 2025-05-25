@@ -126,25 +126,46 @@ void bmp8_threshold(t_bmp8 *img, int threshold) {
 }
 
 void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
+    if (!img || !img->data || !kernel || kernelSize % 2 == 0) return;
+
     int offset = kernelSize / 2;
     unsigned char *newData = (unsigned char *)malloc(img->dataSize);
-    if (!newData) return;
+    if (!newData) {
+        printf("Error: Could not allocate memory for filtered data\n");
+        return;
+    }
 
-    for (unsigned int y = offset; y < img->height - offset; y++) {
-        for (unsigned int x = offset; x < img->width - offset; x++) {
-            float sum = 0;
-            for (int ky = -offset; ky <= offset; ky++) {
-                for (int kx = -offset; kx <= offset; kx++) {
-                    sum += img->data[(y + ky) * img->width + (x + kx)] * 
-                           kernel[ky + offset][kx + offset];
+    // Copy original data to new buffer
+    memcpy(newData, img->data, img->dataSize);
+
+    // Apply filter to each pixel
+    for (unsigned int y = 0; y < img->height; y++) {
+        for (unsigned int x = 0; x < img->width; x++) {
+            float sum = 0.0f;
+            for (int ky = 0; ky < kernelSize; ky++) {
+                for (int kx = 0; kx < kernelSize; kx++) {
+                    int pixelX = x + kx - kernelSize/2;
+                    int pixelY = y + ky - kernelSize/2;
+                    
+                    // Handle edge cases
+                    if (pixelX < 0) pixelX = 0;
+                    if (pixelY < 0) pixelY = 0;
+                    if (pixelX >= img->width) pixelX = img->width - 1;
+                    if (pixelY >= img->height) pixelY = img->height - 1;
+                    
+                    sum += newData[pixelY * img->width + pixelX] * kernel[ky][kx];
                 }
             }
-            if (sum > 255) sum = 255;
-            if (sum < 0) sum = 0;
-            newData[y * img->width + x] = (unsigned char)sum;
+            
+            // Clamp and store result
+            int result = (int)(sum + 0.5f);
+            if (result < 0) result = 0;
+            if (result > 255) result = 255;
+            newData[y * img->width + x] = (unsigned char)result;
         }
     }
 
+    // Copy filtered data back to image
     memcpy(img->data, newData, img->dataSize);
     free(newData);
 }
